@@ -3,11 +3,12 @@
 #=====================================================================================#
 # This script will take the raw tSpan data, extract the responses with participant 
 # numbers, remove duplicates, "clean" those responses, bind them with emailed responses, 
-# bind responses to original data set, insert "no response" in for non-responders and 
-# e-prime errors
+# bind responses to original data set, insert column for notes to identify "no 
+# response", "emailed response, "response", and "e-prime error" 
 #=====================================================================================#
 # Library
 library(tidyverse)
+library(data.table)
 #=====================================================================================#
 # Extract responses with subject number and remove duplicates
 rawest <- read.csv("tSpanRawData_1_31_18.csv")
@@ -21,11 +22,21 @@ clean <- as.data.frame(gsub("[{}]", "", raw))
 clean <- cbind(no.dup$Subject, clean)
 colnames(clean) <- c("Subject", "Strategy.RESP")
 #=====================================================================================#
-# Bind emailed responses to "cleaned" responses
-# More on this later!
-cleaned <- clean
+# NEED TO ADD "Response" to all responder rows
+clean <- as.data.table(clean)
+clean <- clean[, ResponseType := (Strategy.RESP != "")] 
+# This works fine. Change TRUE to responded
+
+
 #=====================================================================================#
-# NEED TO ADD "no response" to appropriate participants
+# Bind emailed responses to "cleaned" responses. Make sure to include "email" in notes
+# email <- read.csv("emailedStrategies.csv")
+# as.data.table(email)
+# as.data.table(clean)
+# clean <- clean[email, by = "Subject", nomatch=0]
+# cleaned <- clean
+#=====================================================================================#
+# NEED TO ADD "no response" 
 #=====================================================================================#
 # bind responses to original data set
 final <- subset(rawest, !duplicated(rawest[,2]))
