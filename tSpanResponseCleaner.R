@@ -25,15 +25,29 @@ colnames(clean) <- c("Subject", "Strategy.RESP")
 # NEED TO ADD "Response" to all responder rows
 clean <- as.data.table(clean)
 clean <- clean[, ResponseType := (Strategy.RESP != "")] 
-# This works fine. Change TRUE to responded
+# Change TRUE to "responded"
+clean[, ResponseType := as.character(ResponseType)]
+clean$ResponseType <- ifelse(test = clean$ResponseType == "TRUE",yes = "RESPONSE", no = "")
 
 
 #=====================================================================================#
 # Bind emailed responses to "cleaned" responses. Make sure to include "email" in notes
-# email <- read.csv("emailedStrategies.csv")
-# as.data.table(email)
-# as.data.table(clean)
-# clean <- clean[email, by = "Subject", nomatch=0]
+email <- fread("emailedStrategies.csv")
+email$Subject <- as.character(email$Subject)
+clean$Subject <- as.character(clean$Subject)
+names(email)
+names(clean)
+
+gianotable <- email[clean, on="Subject"] #bind email and clean by subject number
+gianotable$Strata <- paste(gianotable$i.Strategy.RESP,gianotable$Strategy.RESP) #combine response columns to Strata
+gianotable <- gianotable[, !c(2:4)] # eliminate unnecessary/duplicate columns from previous line
+gianotable[gianotable$Strata == " NA"] <- "" # get rid of NA's
+
+# ADD "EMAIL" to response type
+
+gianotable <- as.data.table(gianotable)
+gianotable <- gianotable[, ResponseType := (Strata != "")] 
+
 # cleaned <- clean
 #=====================================================================================#
 # NEED TO ADD "no response" 
