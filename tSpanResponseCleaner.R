@@ -18,16 +18,17 @@ no.dup <- unique(select(rawest, contains("Subject"), contains("Strategy.RESP")))
 raw <- gsub("SPACE", " ", no.dup$Strategy.RESP)
 raw <- gsub("SHIFT", "", raw)
 raw <- gsub("ENTER", "", raw)
+raw <- gsub("CAPSLOCK", "", raw)
+raw <- gsub("LEFTARROWLEFTARROWLEFTARROWLEFTARROWRIGHTARROWRIGHTARROWRIGHTARROWRIGHTARROW", "", raw)
 clean <- as.data.frame(gsub("[{}]", "", raw))
 clean <- cbind(no.dup$Subject, clean)
 colnames(clean) <- c("Subject", "Strategy.RESP")
 #=====================================================================================#
-# NEED TO ADD "Response" to all responder rows
 clean <- as.data.table(clean)
-clean <- clean[, ResponseType := (Strategy.RESP != "")] 
+clean <- clean[, Response.Type := (Strategy.RESP != "")] 
 # Change TRUE to "responded"
-clean[, ResponseType := as.character(ResponseType)]
-clean$ResponseType <- ifelse(test = clean$ResponseType == "TRUE",yes = "RESPONSE", no = "")
+clean[, Response.Type := as.character(Response.Type)]
+clean$Response.Type <- ifelse(test = clean$Response.Type == "TRUE",yes = "RESPONSE", no = "")
 
 
 #=====================================================================================#
@@ -40,24 +41,22 @@ names(clean)
 
 gianotable <- email[clean, on="Subject"] #bind email and clean by subject number
 gianotable$Strata <- paste(gianotable$i.Strategy.RESP,gianotable$Strategy.RESP) #combine response columns to Strata
-gianotable <- gianotable[, !c(2:4)] # eliminate unnecessary/duplicate columns from previous line
-gianotable[gianotable$Strata == " NA"] <- "" # get rid of NA's
+gianotable <- gianotable[, !c(3:4)] # eliminate unnecessary/duplicate columns from previous line
+gianotable[gianotable$`Type of Strategy Response` == ""] <- ""
+gianotable$Response.Type <- paste(gianotable$'Type of Strategy Response', gianotable$Response.Type) #add "emailed" to response type column
+gianotable[gianotable == " NA"] <- "" # get rid of NA's
+gianotable$Response.Type[gianotable$Response.Type == "NA RESPONSE"] <- "RESPONSE" # Fix error from paste
+gianotable[gianotable$Response.Type == "NA "] <- "" # Delete some more NA's
+gianotable$Response.Type[gianotable$Response.Type == ""] <- "NO RESPONSE" # Add "NO RESPONSE" to response.type 
 
-# ADD "EMAIL" to response type
-
-gianotable <- as.data.table(gianotable)
-gianotable <- gianotable[, ResponseType := (Strata != "")] 
-
-# cleaned <- clean
-#=====================================================================================#
-# NEED TO ADD "no response" 
+gianotable <- gianotable[, !c(2)] #eliminate unnecessary column from paste
+cleaned <- gianotable # Prepped for binding back to original dataset
 #=====================================================================================#
 # bind responses to original data set
 final <- subset(rawest, !duplicated(rawest[,2]))
-final <- cbind(final, cleaned$Strategy.RESP)
-# Remove old "dirt" Strategy.RESP column
-final <- final[,-36] 
-colnames(final)[139] <- ("Strategy.RESP")
+final <- cbind(final, cleaned) #bind original and new dataset
+final <- final[,-36] # Remove old Strategy.RESP column
+colnames(final)[142] <- ("Strategy.RESP")
 #=====================================================================================#
 write.csv(final, "cleanTSpanResponse.csv")
 
