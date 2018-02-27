@@ -54,9 +54,8 @@ cleaned <- gianotable # Prepped for binding back to original dataset
 #=====================================================================================#
 # bind responses to original data set
 final <- subset(rawest, !duplicated(rawest[,2]))
-final <- cbind(final, cleaned) #bind original and new dataset
+final <- cbind(final, cleaned) #bind original and cleaned dataset
 final <- final[,-36] # Remove old Strategy.RESP column
 colnames(final)[142] <- ("Strategy.RESP")
 #=====================================================================================#
 write.csv(final, "cleanTSpanResponse.csv")
-
