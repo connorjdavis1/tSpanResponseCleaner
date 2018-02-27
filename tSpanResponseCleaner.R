@@ -46,10 +46,10 @@ gianotable[gianotable$`Type of Strategy Response` == ""] <- ""
 gianotable$Response.Type <- paste(gianotable$'Type of Strategy Response', gianotable$Response.Type) #add "emailed" to response type column
 gianotable[gianotable == " NA"] <- "" # get rid of NA's
 gianotable$Response.Type[gianotable$Response.Type == "NA RESPONSE"] <- "RESPONSE" # Fix error from paste
-gianotable[gianotable$Response.Type == "NA "] <- "" # Delete some more NA's
+gianotable[gianotable == "NA "] <- "" # Delete some more NA's
 gianotable$Response.Type[gianotable$Response.Type == ""] <- "NO RESPONSE" # Add "NO RESPONSE" to response.type 
-
 gianotable <- gianotable[, !c(2)] #eliminate unnecessary column from paste
+gianotable$Strata <- str_replace_all(gianotable$Strata, "NA", "") # remove more blasted NA's from the end of the string
 cleaned <- gianotable # Prepped for binding back to original dataset
 #=====================================================================================#
 # bind responses to original data set
