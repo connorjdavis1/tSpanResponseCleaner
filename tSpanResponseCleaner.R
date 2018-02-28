@@ -30,7 +30,6 @@ clean <- clean[, Response.Type := (Strategy.RESP != "")]
 clean[, Response.Type := as.character(Response.Type)]
 clean$Response.Type <- ifelse(test = clean$Response.Type == "TRUE",yes = "RESPONSE", no = "")
 
-
 #=====================================================================================#
 # Bind emailed responses to "cleaned" responses. Make sure to include "email" in notes
 email <- fread("emailedStrategies.csv")
@@ -59,3 +58,4 @@ final <- final[,-36] # Remove old Strategy.RESP column
 colnames(final)[142] <- ("Strategy.RESP")
 #=====================================================================================#
 write.csv(final, "cleanTSpanResponse.csv")
+
